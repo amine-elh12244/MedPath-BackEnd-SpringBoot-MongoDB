@@ -16,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 @Service
 @Transactional
@@ -40,8 +41,24 @@ public class AdminService {
 
     // Create a new admin
     public Admin createAdmin(Admin admin) {
-//          String password = admin.getPassword();
-//         admin.setPassword(passwordEncoder.encode(password));
+
+        Set<Role> userRoles = admin.getRole();
+
+        // Vérifier chaque rôle pour existence
+        for (Role userRole : userRoles) {
+            String roleName = userRole.getRoleName();
+            Role existingRole = roleRepository.findByRoleName(roleName);
+
+            if (existingRole != null) {
+                // Si le rôle existe, l'assigner à l'utilisateur
+                admin.getRole().remove(userRole); // Retirer le rôle existant de la collection
+                admin.getRole().add(existingRole); // Ajouter le rôle existant
+            } else {
+                // Si le rôle n'existe pas, créer un nouveau rôle et l'assigner à l'utilisateur
+                roleRepository.save(userRole);
+            }
+        }
+
         return adminRepository.save(admin);
     }
 
@@ -81,10 +98,26 @@ public class AdminService {
         adminRepository.deleteById(id);
     }
 
-    public user createUser(user User) {
-        User.setRole(new HashSet<>()); // Initialize the Set
-        return userRepository.save(User);
+    public user createUser(user user) {
+        // Récupérer les rôles de l'utilisateur
+        Set<Role> userRoles = user.getRole();
 
+        // Vérifier chaque rôle pour existence
+        for (Role userRole : userRoles) {
+            String roleName = userRole.getRoleName();
+            Role existingRole = roleRepository.findByRoleName(roleName);
+
+            if (existingRole != null) {
+                // Si le rôle existe, l'assigner à l'utilisateur
+                user.getRole().remove(userRole); // Retirer le rôle existant de la collection
+                user.getRole().add(existingRole); // Ajouter le rôle existant
+            } else {
+                // Si le rôle n'existe pas, créer un nouveau rôle et l'assigner à l'utilisateur
+                roleRepository.save(userRole);
+            }
+        }
+
+        return userRepository.save(user);
     }
 
     // Retrieve all users

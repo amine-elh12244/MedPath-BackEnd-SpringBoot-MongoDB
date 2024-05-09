@@ -1,9 +1,8 @@
 package agil.teem.harmoniacarebackend.services;
 
-import agil.teem.harmoniacarebackend.entities.Coursier;
-import agil.teem.harmoniacarebackend.entities.Request;
-import agil.teem.harmoniacarebackend.entities.RequestStatus;
-import agil.teem.harmoniacarebackend.entities.Result;
+import agil.teem.harmoniacarebackend.EmailSender.EmailService;
+import agil.teem.harmoniacarebackend.entities.*;
+import agil.teem.harmoniacarebackend.repositories.LaboratoireRepository;
 import agil.teem.harmoniacarebackend.repositories.RequestRepository;
 import agil.teem.harmoniacarebackend.repositories.CoursierRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,14 +15,18 @@ import java.util.Optional;
 public class RequestService {
 
     private final RequestRepository requestRepository;
+    private final EmailService emailService;
 
     private final CoursierRepository  CoursierRepository;
+    private final LaboratoireRepository laboratoireRepository;
 
 
     @Autowired
-    public RequestService(RequestRepository requestRepository, agil.teem.harmoniacarebackend.repositories.CoursierRepository coursierRepository) {
+    public RequestService(RequestRepository requestRepository,CoursierRepository coursierRepository , LaboratoireRepository laboratoireRepository ,EmailService emailService) {
         this.requestRepository = requestRepository;
         this.CoursierRepository = coursierRepository;
+        this.laboratoireRepository = laboratoireRepository;
+        this.emailService = emailService;
     }
 
 
@@ -35,12 +38,33 @@ public class RequestService {
             Request request = optionalRequest.get();
             Coursier courier = optionalCourier.get();
             request.assignCourier(courier);
+            String courierEmail = courier.getEmail(); // replace this with actual code to get the courier's email
+            String subject = "You have been assigned a new request";
+            String text = "You have been assigned to the request with ID: " + requestId;
+            emailService.sendSimpleMessage(courierEmail, subject, text);
             return requestRepository.save(request);
+
         } else {
             throw new RuntimeException("Request or courier not found");
         }
         // ...
     }
+
+    public Request assignLab(String requestId, String labId) {
+        Optional<Request> optionalRequest = requestRepository.findById(requestId);
+        Optional<Laboratoire> optionalLab = laboratoireRepository.findById(labId);
+
+        if (optionalRequest.isPresent() && optionalLab.isPresent()) {
+            Request request = optionalRequest.get();
+            Laboratoire lab = optionalLab.get();
+            request.assignLabo(lab);
+
+            return requestRepository.save(request);
+        } else {
+            throw new RuntimeException("Request or lab not found");
+        }
+    }
+
 
     public void addResultToRequest(String requestId, Result result) {
         Request request = requestRepository.findById(requestId).orElseThrow(() -> new RuntimeException("Request not found"));

@@ -46,6 +46,11 @@ public class Request {
         this.status = RequestStatus.DEMANDE_ASSIGNÉE;
     }
 
+    public void assignLabo(Laboratoire lab) {
+        this.lab = lab;
+        this.status = RequestStatus.RÉCEPTION_LABO;
+    }
+
 //    public void addResult(Result result) {
 //        this.result = result;
 //        this.status = RequestStatus.RÉSULTAT_DISPONIBLE;

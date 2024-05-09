@@ -64,10 +64,17 @@ public class RequestController {
         return requestService.updateRequestStatus(id);
     }
 
-    @PatchMapping("/{requestId}/courier/{courierId}")
+    @PatchMapping("/{requestId}/assignCourier/{courierId}")
     public Request assignCourier(@PathVariable String requestId, @PathVariable String courierId) {
         return requestService.assignCourier(requestId, courierId);
     }
+
+    @PatchMapping("/{requestId}/receptionLabo/{labId}")
+    public Request assigneLab(@PathVariable String requestId, @PathVariable String labId) {
+        return requestService.assignLab(requestId, labId);
+    }
+
+
 
     // Delete a request
     @DeleteMapping("/{id}")
@@ -93,10 +100,7 @@ public class RequestController {
         return requestService.updateStatusToResultatReceptionnee(id);
     }
 
-    @PatchMapping("/{id}/status/receptionLabo")
-    public Request updateStatusToReceptionLabo(@PathVariable String id) {
-        return requestService.updateStatusToReceptionLabo(id);
-    }
+
 
     @PatchMapping("/{id}/status/enCoursDeTest")
     public Request updateStatusToEnCoursDeTest(@PathVariable String id) {
@@ -104,8 +108,10 @@ public class RequestController {
     }
 
     @PatchMapping("/{id}/status/resultatDisponible")
-    public Request updateStatusToResultatDisponible(@PathVariable String id) {
-        return requestService.updateStatusToResultatDisponible(id);
+    public Request updateStatusToResultatDisponible(@PathVariable String id, @RequestBody Result result) {
+        Request updatedRequest = requestService.updateStatusToResultatDisponible(id);
+        requestService.addResultToRequest(id, result);
+        return updatedRequest;
     }
 
     @PatchMapping("/{id}/status/enlevementLabo")
