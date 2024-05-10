@@ -1,6 +1,7 @@
 package agil.teem.harmoniacarebackend;
 
 import agil.teem.harmoniacarebackend.EmailSender.EmailProperties;
+import agil.teem.harmoniacarebackend.Sercurity.JwtProperties;
 import agil.teem.harmoniacarebackend.entities.user;
 import agil.teem.harmoniacarebackend.repositories.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,7 +14,7 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 
 import java.util.List;
 
-@EnableConfigurationProperties(EmailProperties.class)
+@EnableConfigurationProperties({EmailProperties.class, JwtProperties.class})
 
 @SpringBootApplication
 public class HarmoniaCareBackEndApplication implements CommandLineRunner {

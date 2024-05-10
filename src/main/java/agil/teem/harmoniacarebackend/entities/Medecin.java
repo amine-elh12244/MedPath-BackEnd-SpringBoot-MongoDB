@@ -7,8 +7,11 @@ import lombok.NonNull;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.AuthorityUtils;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 @Document(collection = "users")
@@ -16,6 +19,11 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class Medecin extends user {
+
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return AuthorityUtils.createAuthorityList("ROLE_MEDECIN");
+    }
     @NonNull
     @Field("QuotaVouchers")
     private int QuotaVouchers;

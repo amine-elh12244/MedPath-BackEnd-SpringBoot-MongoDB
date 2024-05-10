@@ -16,17 +16,19 @@ public class RequestService {
 
     private final RequestRepository requestRepository;
     private final EmailService emailService;
-
     private final CoursierRepository  CoursierRepository;
     private final LaboratoireRepository laboratoireRepository;
-
+    private final MedecinService medecinService; // Add this line
+    private final LaboratoireService laboService; // Add this line
 
     @Autowired
-    public RequestService(RequestRepository requestRepository,CoursierRepository coursierRepository , LaboratoireRepository laboratoireRepository ,EmailService emailService) {
+    public RequestService(RequestRepository requestRepository, CoursierRepository coursierRepository, LaboratoireRepository laboratoireRepository, EmailService emailService, MedecinService medecinService, LaboratoireService laboService) { // Update this line
         this.requestRepository = requestRepository;
         this.CoursierRepository = coursierRepository;
         this.laboratoireRepository = laboratoireRepository;
         this.emailService = emailService;
+        this.medecinService = medecinService; // Add this line
+        this.laboService = laboService; // Add this line
     }
 
 
@@ -122,6 +124,22 @@ public class RequestService {
     // Create a new request
     public Request createRequest(Request request) {
         request.setStatus(RequestStatus.DEMANDE_INITIEE);
+        request.setStatus(RequestStatus.DEMANDE_INITIEE);
+
+        // Create a new medecin and save it
+        Medecin savedMedecin = medecinService.createMedecin(request.getMedecin());
+
+        // Create a new labo and save it if it's not null
+        Laboratoire savedLabo = null;
+        if (request.getLab() != null) {
+            savedLabo = laboService.createLaboratoire(request.getLab());
+        }
+
+        // Set saved medecin and labo in the request
+        request.setMedecin(savedMedecin);
+        request.setLab(savedLabo);
+
+        // Save the request
         return requestRepository.save(request);
     }
 
