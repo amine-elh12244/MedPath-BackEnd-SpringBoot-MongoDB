@@ -5,11 +5,14 @@ import agil.teem.harmoniacarebackend.entities.*;
 import agil.teem.harmoniacarebackend.repositories.LaboratoireRepository;
 import agil.teem.harmoniacarebackend.repositories.RequestRepository;
 import agil.teem.harmoniacarebackend.repositories.CoursierRepository;
+import agil.teem.harmoniacarebackend.repositories.RoleRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 @Service
 public class RequestService {
@@ -19,14 +22,16 @@ public class RequestService {
 
     private final CoursierRepository  CoursierRepository;
     private final LaboratoireRepository laboratoireRepository;
+    private final RoleRepository roleRepository;
 
 
     @Autowired
-    public RequestService(RequestRepository requestRepository,CoursierRepository coursierRepository , LaboratoireRepository laboratoireRepository ,EmailService emailService) {
+    public RequestService(RequestRepository requestRepository,CoursierRepository coursierRepository , LaboratoireRepository laboratoireRepository ,EmailService emailService ,  RoleRepository roleRepository) {
         this.requestRepository = requestRepository;
         this.CoursierRepository = coursierRepository;
         this.laboratoireRepository = laboratoireRepository;
         this.emailService = emailService;
+        this.roleRepository = roleRepository;
     }
 
 
@@ -122,8 +127,51 @@ public class RequestService {
     // Create a new request
     public Request createRequest(Request request) {
         request.setStatus(RequestStatus.DEMANDE_INITIEE);
+
+        // Verify and update roles for Medecin if not null
+        if (request.getMedecin() != null) {
+            Set<Role> medecinRoles = new HashSet<>();
+            for (Role userRole : request.getMedecin().getRole()) {
+                String roleName = userRole.getRoleName();
+                Role existingRole = roleRepository.findByRoleName(roleName);
+
+                if (existingRole != null) {
+                    // If the role already exists, use the existing one
+                    medecinRoles.add(existingRole);
+                } else {
+                    // If the role doesn't exist, save it in the database
+                    medecinRoles.add(roleRepository.save(userRole));
+                }
+            }
+            // Save the updated roles for Medecin
+            request.getMedecin().setRole(medecinRoles);
+        }
+
+        // Verify and update roles for Lab if not null
+        if (request.getLab() != null) {
+            Set<Role> labRoles = new HashSet<>();
+            for (Role userRole : request.getLab().getRole()) {
+                String roleName = userRole.getRoleName();
+                Role existingRole = roleRepository.findByRoleName(roleName);
+
+                if (existingRole != null) {
+                    // If the role already exists, use the existing one
+                    labRoles.add(existingRole);
+                } else {
+                    // If the role doesn't exist, save it in the database
+                    labRoles.add(roleRepository.save(userRole));
+                }
+            }
+            // Save the updated roles for Lab
+            request.getLab().setRole(labRoles);
+        }
+
+        // Save the updated request
         return requestRepository.save(request);
     }
+
+
+
 
     // Retrieve all requests
     public List<Request> getAllRequests() {
