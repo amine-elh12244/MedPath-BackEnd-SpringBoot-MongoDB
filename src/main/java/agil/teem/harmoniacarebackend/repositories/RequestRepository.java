@@ -10,4 +10,7 @@ public interface RequestRepository extends MongoRepository<Request, String> {
 
     List<Request> findAllByStatus(RequestStatus status);
 
+    List<Request> findByMedecinId(String medecinId);
+
+    List<Request> findByMedecinIdAndStatus(String medecinId, RequestStatus status);
 }

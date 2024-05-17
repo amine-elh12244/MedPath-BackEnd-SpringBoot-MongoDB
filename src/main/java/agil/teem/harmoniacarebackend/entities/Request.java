@@ -42,10 +42,16 @@ public class Request {
     @DBRef
     private Result result;
 
-    private LocalDate date; // Add this line
+    @DBRef
+    private Pdf ordonnance;
+
+    @DBRef
+    private Pdf compteRenduAnatomopathologique;
+
+    private LocalDate date;
 
     public Request() {
-        this.date = LocalDate.now(); // Initialize date with the current system date
+        this.date = LocalDate.now();
     }
 
     public void assignCourier(Coursier courier) {

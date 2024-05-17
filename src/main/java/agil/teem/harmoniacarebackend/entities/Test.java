@@ -7,6 +7,7 @@ import lombok.NonNull;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.time.LocalTime;
 import java.util.Date;
 
 @Document(collection = "tests")
@@ -18,10 +19,13 @@ public class Test {
     private String id;
 
     @NonNull
-    private Date dateDemande;
-
+    private Date datePrelevement;
     @NonNull
-    private String testName;
-
-    private String description;
+    private String testType;
+    @NonNull
+    private String sampleType;
+    @NonNull
+    private String labInstructions;
+    @NonNull
+    private String testReason;
 }

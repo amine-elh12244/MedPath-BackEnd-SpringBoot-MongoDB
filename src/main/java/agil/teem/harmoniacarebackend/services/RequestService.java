@@ -3,6 +3,7 @@ package agil.teem.harmoniacarebackend.services;
 import agil.teem.harmoniacarebackend.EmailSender.EmailService;
 import agil.teem.harmoniacarebackend.entities.*;
 import agil.teem.harmoniacarebackend.repositories.LaboratoireRepository;
+import agil.teem.harmoniacarebackend.repositories.MedecinRepository;
 import agil.teem.harmoniacarebackend.repositories.RequestRepository;
 import agil.teem.harmoniacarebackend.repositories.CoursierRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,15 +21,18 @@ public class RequestService {
     private final LaboratoireRepository laboratoireRepository;
     private final MedecinService medecinService; // Add this line
     private final LaboratoireService laboService; // Add this line
+    private final PdfService pdfService;
+
 
     @Autowired
-    public RequestService(RequestRepository requestRepository, CoursierRepository coursierRepository, LaboratoireRepository laboratoireRepository, EmailService emailService, MedecinService medecinService, LaboratoireService laboService) { // Update this line
+    public RequestService(RequestRepository requestRepository, CoursierRepository coursierRepository, LaboratoireRepository laboratoireRepository, EmailService emailService, MedecinService medecinService, LaboratoireService laboService, PdfService pdfService) { // Update this line
         this.requestRepository = requestRepository;
         this.CoursierRepository = coursierRepository;
         this.laboratoireRepository = laboratoireRepository;
         this.emailService = emailService;
         this.medecinService = medecinService; // Add this line
         this.laboService = laboService; // Add this line
+        this.pdfService = pdfService;
     }
 
 
@@ -122,24 +126,53 @@ public class RequestService {
     }
 
     // Create a new request
+//    public Request createRequest(Request request) {
+//        request.setStatus(RequestStatus.DEMANDE_INITIEE);
+//        // Create a new medecin and save it
+//
+//        Medecin savedMedecin = null;
+//        if (request.getMedecin() != null) {
+//            savedMedecin = medecinService.createMedecin(request.getMedecin());
+//        }
+//        // Create a new labo and save it if it's not null
+//        Laboratoire savedLabo = null;
+//        if (request.getLab() != null) {
+//            savedLabo = laboService.createLaboratoire(request.getLab());
+//        }
+//
+//        // Set saved medecin and labo in the request
+//        request.setMedecin(savedMedecin);
+//        request.setLab(savedLabo);
+//
+//        // Save the request
+//        return requestRepository.save(request);
+//    }
+
+
     public Request createRequest(Request request) {
         request.setStatus(RequestStatus.DEMANDE_INITIEE);
-        request.setStatus(RequestStatus.DEMANDE_INITIEE);
+        Optional<Medecin> existingMedecinOptional = medecinService.getMedecinById(request.getMedecin().getId());
+        if (!existingMedecinOptional.isPresent()) {
+            throw new RuntimeException("Medecin not found");
+        }
+        request.setMedecin(existingMedecinOptional.get());
 
-        // Create a new medecin and save it
-        Medecin savedMedecin = medecinService.createMedecin(request.getMedecin());
-
-        // Create a new labo and save it if it's not null
-        Laboratoire savedLabo = null;
-        if (request.getLab() != null) {
-            savedLabo = laboService.createLaboratoire(request.getLab());
+        if (request.getOrdonnance() != null) {
+            Optional<Pdf> Ordonnance = pdfService.getpdfById(request.getOrdonnance().getId());
+            if (!Ordonnance.isPresent()) {
+                throw new RuntimeException("Ordonnance not found");
+            }
+            request.setOrdonnance(Ordonnance.get());
         }
 
-        // Set saved medecin and labo in the request
-        request.setMedecin(savedMedecin);
-        request.setLab(savedLabo);
+        if (request.getCompteRenduAnatomopathologique() != null) {
+            Optional<Pdf> CompteRenduAnatomopathologique = pdfService.getpdfById(request.getCompteRenduAnatomopathologique().getId());
+            if (!CompteRenduAnatomopathologique.isPresent()) {
+                throw new RuntimeException("CompteRenduAnatomopathologique not found");
+            }
+            request.setOrdonnance(CompteRenduAnatomopathologique.get());
+        }
 
-        // Save the request
         return requestRepository.save(request);
     }
 
@@ -179,6 +212,15 @@ public class RequestService {
         } else {
             throw new RuntimeException("Request not found");
         }
+    }
+
+    public List<Request> getRequestsByDoctor(String doctorId) {
+        return requestRepository.findByMedecinId(doctorId);
+    }
+
+
+    public List<Request> getRequestsByDoctorAndStatus(String doctorId, RequestStatus status) {
+        return requestRepository.findByMedecinIdAndStatus(doctorId, status);
     }
 
 

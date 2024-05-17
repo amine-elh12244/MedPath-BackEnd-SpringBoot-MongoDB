@@ -139,4 +139,15 @@ public class RequestController {
         webSocketService.sendMessage("request-updated");
         return requestService.updateStatusToEnlevementLabo(id);
     }
+
+    @GetMapping("/Medecin/{doctorId}")
+    public List<Request> getRequestsByDoctor(@PathVariable String doctorId) {
+        return requestService.getRequestsByDoctor(doctorId);
+    }
+
+    @GetMapping("/Medecin/{doctorId}/{status}")
+    public List<Request> getRequestsByDoctorAndStatus(@PathVariable String doctorId, @PathVariable RequestStatus status) {
+        return requestService.getRequestsByDoctorAndStatus(doctorId, status);
+    }
+
 }
