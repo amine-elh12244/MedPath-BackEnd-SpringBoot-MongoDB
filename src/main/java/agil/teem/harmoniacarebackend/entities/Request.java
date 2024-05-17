@@ -8,9 +8,10 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.time.LocalDate;
+
 @Document(collection = "requests")
 @Data
-@NoArgsConstructor
 @AllArgsConstructor
 public class Request {
     @Id
@@ -40,6 +41,12 @@ public class Request {
 
     @DBRef
     private Result result;
+
+    private LocalDate date; // Add this line
+
+    public Request() {
+        this.date = LocalDate.now(); // Initialize date with the current system date
+    }
 
     public void assignCourier(Coursier courier) {
         this.courier = courier;

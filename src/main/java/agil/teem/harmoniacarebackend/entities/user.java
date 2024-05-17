@@ -34,6 +34,9 @@ public abstract class user   {
     @Field("email")
     private String email;
 
+    @Field("ville")
+    private String ville;
+
     @Field("adresse")
     private String adresse;
 

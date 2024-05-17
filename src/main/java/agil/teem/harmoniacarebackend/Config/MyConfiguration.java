@@ -20,13 +20,13 @@ public class MyConfiguration {
 
     @Bean
     public WebMvcConfigurer corsConfigurer() {
-        System.out.println("CORS configuration is being loaded"); // This line is added
+        System.out.println("CORS configuration is being loaded");
         return new WebMvcConfigurer() {
             @Override
             public void addCorsMappings(CorsRegistry registry) {
                 registry.addMapping("/**")
-                        .allowedOrigins("*")
-                        .allowedMethods("GET", "POST", "PUT", "DELETE", "HEAD", "OPTIONS")
+                        .allowedOrigins("http://localhost:4200")
+                        .allowedMethods("GET", "POST", "PUT", "PATCH","DELETE", "HEAD", "OPTIONS")
                         .allowedHeaders("*");
             }
         };

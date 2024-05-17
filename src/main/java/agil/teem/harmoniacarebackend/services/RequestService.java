@@ -5,33 +5,30 @@ import agil.teem.harmoniacarebackend.entities.*;
 import agil.teem.harmoniacarebackend.repositories.LaboratoireRepository;
 import agil.teem.harmoniacarebackend.repositories.RequestRepository;
 import agil.teem.harmoniacarebackend.repositories.CoursierRepository;
-import agil.teem.harmoniacarebackend.repositories.RoleRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 
 @Service
 public class RequestService {
 
     private final RequestRepository requestRepository;
     private final EmailService emailService;
-
     private final CoursierRepository  CoursierRepository;
     private final LaboratoireRepository laboratoireRepository;
-    private final RoleRepository roleRepository;
-
+    private final MedecinService medecinService; // Add this line
+    private final LaboratoireService laboService; // Add this line
 
     @Autowired
-    public RequestService(RequestRepository requestRepository,CoursierRepository coursierRepository , LaboratoireRepository laboratoireRepository ,EmailService emailService ,  RoleRepository roleRepository) {
+    public RequestService(RequestRepository requestRepository, CoursierRepository coursierRepository, LaboratoireRepository laboratoireRepository, EmailService emailService, MedecinService medecinService, LaboratoireService laboService) { // Update this line
         this.requestRepository = requestRepository;
         this.CoursierRepository = coursierRepository;
         this.laboratoireRepository = laboratoireRepository;
         this.emailService = emailService;
-        this.roleRepository = roleRepository;
+        this.medecinService = medecinService; // Add this line
+        this.laboService = laboService; // Add this line
     }
 
 
@@ -127,51 +124,24 @@ public class RequestService {
     // Create a new request
     public Request createRequest(Request request) {
         request.setStatus(RequestStatus.DEMANDE_INITIEE);
+        request.setStatus(RequestStatus.DEMANDE_INITIEE);
 
-        // Verify and update roles for Medecin if not null
-        if (request.getMedecin() != null) {
-            Set<Role> medecinRoles = new HashSet<>();
-            for (Role userRole : request.getMedecin().getRole()) {
-                String roleName = userRole.getRoleName();
-                Role existingRole = roleRepository.findByRoleName(roleName);
+        // Create a new medecin and save it
+        Medecin savedMedecin = medecinService.createMedecin(request.getMedecin());
 
-                if (existingRole != null) {
-                    // If the role already exists, use the existing one
-                    medecinRoles.add(existingRole);
-                } else {
-                    // If the role doesn't exist, save it in the database
-                    medecinRoles.add(roleRepository.save(userRole));
-                }
-            }
-            // Save the updated roles for Medecin
-            request.getMedecin().setRole(medecinRoles);
-        }
-
-        // Verify and update roles for Lab if not null
+        // Create a new labo and save it if it's not null
+        Laboratoire savedLabo = null;
         if (request.getLab() != null) {
-            Set<Role> labRoles = new HashSet<>();
-            for (Role userRole : request.getLab().getRole()) {
-                String roleName = userRole.getRoleName();
-                Role existingRole = roleRepository.findByRoleName(roleName);
-
-                if (existingRole != null) {
-                    // If the role already exists, use the existing one
-                    labRoles.add(existingRole);
-                } else {
-                    // If the role doesn't exist, save it in the database
-                    labRoles.add(roleRepository.save(userRole));
-                }
-            }
-            // Save the updated roles for Lab
-            request.getLab().setRole(labRoles);
+            savedLabo = laboService.createLaboratoire(request.getLab());
         }
 
-        // Save the updated request
+        // Set saved medecin and labo in the request
+        request.setMedecin(savedMedecin);
+        request.setLab(savedLabo);
+
+        // Save the request
         return requestRepository.save(request);
     }
-
-
-
 
     // Retrieve all requests
     public List<Request> getAllRequests() {
