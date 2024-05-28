@@ -13,8 +13,15 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @NoArgsConstructor
 @AllArgsConstructor
 public class Result {
+
     @Id
     private String id;
+
     @NonNull
     private String resultData;
+
+    @DBRef
+    private Pdf resultats;
+
+
 }

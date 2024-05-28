@@ -130,7 +130,6 @@ public class RequestController {
     public Request updateStatusToResultatDisponible(@PathVariable String id, @RequestBody Result result) {
         Request updatedRequest = requestService.updateStatusToResultatDisponible(id);
         requestService.addResultToRequest(id, result);
-        webSocketService.sendMessage("request-updated");
         return updatedRequest;
     }
 
@@ -145,9 +144,23 @@ public class RequestController {
         return requestService.getRequestsByDoctor(doctorId);
     }
 
+    @GetMapping("/Labo/{LaboId}")
+    public List<Request> getRequestsByLabo(@PathVariable String LaboId) {
+        return requestService.getRequestsByLabo(LaboId);
+    }
+
+
+
     @GetMapping("/Medecin/{doctorId}/{status}")
     public List<Request> getRequestsByDoctorAndStatus(@PathVariable String doctorId, @PathVariable RequestStatus status) {
         return requestService.getRequestsByDoctorAndStatus(doctorId, status);
     }
+
+    @GetMapping("/Labo/{LaboId}/{status}")
+    public List<Request> getRequestsByLaboAndStatus(@PathVariable String LaboId, @PathVariable RequestStatus status) {
+        return requestService.getRequestsByLaboAndStatus(LaboId, status);
+    }
+
+
 
 }

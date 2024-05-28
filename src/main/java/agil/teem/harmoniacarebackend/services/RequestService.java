@@ -2,10 +2,7 @@ package agil.teem.harmoniacarebackend.services;
 
 import agil.teem.harmoniacarebackend.EmailSender.EmailService;
 import agil.teem.harmoniacarebackend.entities.*;
-import agil.teem.harmoniacarebackend.repositories.LaboratoireRepository;
-import agil.teem.harmoniacarebackend.repositories.MedecinRepository;
-import agil.teem.harmoniacarebackend.repositories.RequestRepository;
-import agil.teem.harmoniacarebackend.repositories.CoursierRepository;
+import agil.teem.harmoniacarebackend.repositories.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -22,10 +19,11 @@ public class RequestService {
     private final MedecinService medecinService; // Add this line
     private final LaboratoireService laboService; // Add this line
     private final PdfService pdfService;
+    private final ResultRepository resultRepository;
 
 
     @Autowired
-    public RequestService(RequestRepository requestRepository, CoursierRepository coursierRepository, LaboratoireRepository laboratoireRepository, EmailService emailService, MedecinService medecinService, LaboratoireService laboService, PdfService pdfService) { // Update this line
+    public RequestService(RequestRepository requestRepository, CoursierRepository coursierRepository, LaboratoireRepository laboratoireRepository, EmailService emailService, MedecinService medecinService, LaboratoireService laboService, PdfService pdfService , ResultRepository resultRepository) { // Update this line
         this.requestRepository = requestRepository;
         this.CoursierRepository = coursierRepository;
         this.laboratoireRepository = laboratoireRepository;
@@ -33,6 +31,7 @@ public class RequestService {
         this.medecinService = medecinService; // Add this line
         this.laboService = laboService; // Add this line
         this.pdfService = pdfService;
+        this.resultRepository = resultRepository;
     }
 
 
@@ -73,10 +72,29 @@ public class RequestService {
 
 
     public void addResultToRequest(String requestId, Result result) {
+        System.out.println("addResultToRequest method called with requestId: " + requestId + " and result: " + result);
+
         Request request = requestRepository.findById(requestId).orElseThrow(() -> new RuntimeException("Request not found"));
-        request.setResult(result);
+
+        if (result.getResultData() != null && result.getResultats() != null) {
+            Optional<Pdf> resultDataPdf = pdfService.getpdfById(result.getResultats().getId());
+            System.out.println("resultDataPdf: " + resultDataPdf);
+            if (!resultDataPdf.isPresent()) {
+                throw new RuntimeException("ResultData PDF not found");
+            }
+            // Associate the resultData PDF to the result
+            result.setResultats(resultDataPdf.get());
+            System.out.println(result);
+        }
+
+        // Save the result object and get its ID
+        Result savedResult = resultRepository.save(result);
+        System.out.println(savedResult);
+
+        request.setResult(savedResult);
         request.setStatus(RequestStatus.RÉSULTAT_DISPONIBLE);
-        requestRepository.save(request);
+        Request savedRequest = requestRepository.save(request);
+        System.out.println(savedRequest);
     }
 
 
@@ -218,10 +236,23 @@ public class RequestService {
         return requestRepository.findByMedecinId(doctorId);
     }
 
+    public List<Request> getRequestsByLabo(String LaboId) {
+        return requestRepository.findByLab_Id(LaboId);
+    }
+
+
+
+
 
     public List<Request> getRequestsByDoctorAndStatus(String doctorId, RequestStatus status) {
         return requestRepository.findByMedecinIdAndStatus(doctorId, status);
     }
+
+    public List<Request> getRequestsByLaboAndStatus(String LaboId, RequestStatus status) {
+        return requestRepository.findByLab_IdAndStatus(LaboId, status);
+    }
+
+
 
 
 }
